@@ -1,0 +1,3 @@
+I turned in the wrong version of the xor gate.
+I fixed it in lab, during presentation. Everything else worked perfectly.
+My TA Jiayi Huang said I could resubmit it without losing points.
