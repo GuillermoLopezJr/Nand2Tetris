@@ -1,0 +1,41 @@
+/**
+ * The complete address space of the Hack computer's memory,
+ * including RAM and memory-mapped I/O. 
+ * The chip facilitates read and write operations, as follows:
+ *     Read:  out(t) = Memory[address(t)](t)
+ *     Write: if load(t-1) then Memory[address(t-1)](t) = in(t-1)
+ * In words: the chip always outputs the value stored at the memory 
+ * location specified by address. If load==1, the in value is loaded 
+ * into the memory location specified by address. This value becomes 
+ * available through the out output from the next time step onward.
+ * Address space rules:
+ * Only the upper 16K+8K+1 words of the Memory chip are used. 
+ * Access to address>0x6000 is invalid. Access to any address in 
+ * the range 0x4000-0x5FFF results in accessing the screen memory 
+ * map. Access to address 0x6000 results in accessing the keyboard 
+ * memory map. The behavior in these addresses is described in the 
+ * Screen and Keyboard chip specifications given in the book.
+ */
+
+CHIP Memory {
+    IN in[16], load, address[15];
+    OUT out[16];
+
+    PARTS:
+	//sel = MSBits 13 and 14.
+	//bit 14 + bit 13 =  is access to 24576 ie KBD ===> sel bit is 11
+	//bit 14 + all other bits except 13 is access to 16384 - 24575 ie SCREEN ===> sel bit is 10
+	
+	//as long as bit 14 is not 1 then ram picked ==> sel bit is 00 or 01
+	DMux4Way(in=load, sel=address[13..14], a=ramPicked, b=ramPicked2, c=screenPicked, d=kbdPicked);
+	
+	//if either ram is picked and load bit is 1. the ram=1.
+	Or(a=ramPicked, b=ramPicked2, out=ram);
+	
+	//chips needed.
+	RAM16K(in=in, load=ram, address=address[0..13], out=outRam); //if ram is 1 then value is loaded into mem location at address
+	Screen(in=in, load=screenPicked, address=address[0..12], out=outScreen);
+	Keyboard(out=outKey);
+	
+	Mux4Way16(a=outRam, b=outRam, c=outScreen, d=outKey, sel=address[13..14], out=out);	//selects one of the inputs.
+}
