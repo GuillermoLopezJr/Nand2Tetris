@@ -1,0 +1,212 @@
+class PongGame {
+
+    field int WIN_WIDTH, WIN_HEIGHT;
+    field int RIGHT, LEFT;
+    field int direction;
+    field int score;
+    field int lives;
+    field boolean isGameOver;
+    
+    //----for paddle----
+    field Paddle paddle;
+    field int pX, pY;
+    field int P_WIDTH, P_HEIGHT;
+    
+    //---for ball -------
+    field Ball ball;
+    field int bX, bY;
+    field int radius;
+    field int velX, velY;
+
+    constructor PongGame new() {
+        do initVar();
+        do intro();
+        do initPaddle();
+        do initBall();
+        
+        do printScoreLabel();
+        do Sys.wait(400); //to make the game flow better.
+        return this;
+    }
+
+    method void initVar(){
+        let WIN_WIDTH = 511;
+        let WIN_HEIGHT = 254;
+        let LEFT  = 3;
+        let RIGHT = 4;
+        let direction = RIGHT;
+        let score = 0;
+        let isGameOver = false;
+        let lives = 7;
+        return;
+    
+    }
+
+    method void initPaddle(){
+        let P_WIDTH = 60;
+        let P_HEIGHT = 5;
+        let pX = WIN_WIDTH/2;
+        let pY = WIN_HEIGHT - P_HEIGHT - 10;
+        let paddle = Paddle.new(pX, pY, P_WIDTH, P_HEIGHT);
+        return;
+    }
+
+    method void initBall(){
+        let radius = 5;
+        let bX = 200;
+        let bY = 50;
+        let velX = 1;
+        let velY = 1;
+        let ball = Ball.new(bX, bY, radius);
+        return;
+    }
+
+    method void intro(){
+        var char key;
+        do Output.moveCursor(10,10);
+        do Output.printString("Welcome to Single Player PONG");
+        do Output.moveCursor(15,30);
+        do Output.printString("Press any key to play");
+        let key = Keyboard.keyPressed(); 
+        while (key = 0) {
+            let key = Keyboard.keyPressed();
+        }
+        do Screen.clearScreen();
+        return;
+    }
+   
+    method void dispose() {
+        do Memory.deAlloc(paddle);
+        do Memory.deAlloc(ball);
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method void run() {
+        var char key;
+        var boolean exit;
+        let exit = false;
+
+        while (~exit) {
+            // waits for a key to be pressed.
+            
+            while (key = 0) {
+                if (isGameOver) {
+                    do endGame();
+                    return;
+                }
+                do printScore();
+                let key = Keyboard.keyPressed();
+                do moveBall();
+            }
+            if (isGameOver) {
+                do endGame();
+                return;
+            }
+            if (key = 81) {
+                let exit = true;
+            }
+            if (key = 130) {
+                let direction = LEFT;
+            }
+            if (key = 132) {
+                let direction = RIGHT;
+            }
+            // waits for the key to be released.
+            while (~(key = 0)) {
+                let key = Keyboard.keyPressed();
+                do movePaddle();
+                do moveBall();  
+            }
+       }
+        return;
+	}
+
+    method void moveBall() {
+       var int ran;
+       let bX = ball.getX();
+       let bY = ball.getY();
+       let velX = ball.getVelX();
+       let velY = ball.getVelY();
+      
+       if (bY > pY){
+            let lives = lives - 1;
+            if (lives = 0 ) {
+                 let isGameOver = true;
+            }
+            do ball.erase();
+            let ran = mod(bX*31, WIN_WIDTH-10);
+            do ball.put(ran, 50);
+       }
+       
+       if ((bX - 1) < 0) { 
+           do ball.setVelX(-1*velX);
+       }
+       
+       if ((bX +(radius+10)) > WIN_WIDTH) {
+            do ball.setVelX(-1*velX);
+       }
+       if ((bY - radius) < 0 ) {
+           do ball.setVelY(-1*velY);
+       }
+       if ((bY + (radius)) > WIN_HEIGHT) {
+            do ball.setVelY(-1*velY);
+       }
+       if (paddle.hit(bX,bY,radius)){
+            let score = score + 1;
+            do ball.setVelY(-1*velY);
+            do ball.setVelX(-1*velX);
+       }
+       
+       do ball.move();
+       if ( (bY-radius*2) < 10 ) {
+           do printScoreLabel();
+       }
+       do Sys.wait(5); // Delays the next movement.
+       return; 
+    }
+    
+    method void endGame(){
+        do ball.erase();
+        do Output.moveCursor(10,10);
+        do Output.printString("Game Over...");
+        do printScore();
+        return; 
+    }
+
+    method void movePaddle(){
+        if (direction = RIGHT) {
+            do paddle.moveRight();
+        }
+        if (direction = LEFT) {
+            do paddle.moveLeft();
+        }
+        return;   
+    }
+
+    method void printScore(){
+        do Output.moveCursor(0,7);
+        do Output.printInt(score);    
+        do Output.moveCursor(0,60);
+        do Output.printInt(lives);
+        return;
+    }
+
+    method void printScoreLabel(){
+        do Output.moveCursor(0,0);
+        do Output.printString("score: ");
+        do Output.moveCursor(0,53);
+        do Output.printString("lives: ");
+        return;
+    } 
+
+    method int mod(int x, int y){
+        if ( (y > x) | (y = 0)) {
+            return (x+5);   //don't want to get stuck in edge case
+        }
+        if ((x-y) > y) {
+            return mod(x-y, y);
+        }
+        return (x-y);
+    }
+}

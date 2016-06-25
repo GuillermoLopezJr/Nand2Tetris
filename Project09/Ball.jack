@@ -1,0 +1,87 @@
+class Ball {
+    field int x, y;
+    field int radius;
+    field int velX, velY;
+
+    /** Constructs a new ball with a given location and size. */
+    constructor Ball new(int Ax, int Ay, int r) {
+        let x = Ax;
+        let y = Ay;
+        let radius = r;
+        let velX = 1;
+        let velY = 1;
+
+        do draw();
+
+        return this;
+    }
+
+    method int getX() {
+        return x;
+    }
+    method int getY() {
+        return y;
+    }
+    method int getVelX(){
+        return velX;
+    }
+    method int getVelY(){
+        return velY;
+    }
+     method void setVelX(int v){
+        let velX = v;
+        return;
+    }
+     method void setVelY(int v){
+        let velY = v;
+        return;
+    }
+     method void setX(int pos){
+        let x = pos;
+        return;
+    }
+     method void setY(int pos){
+        let y = pos;
+        return;
+    }
+    method int getRadius() {
+        return radius;
+    }
+
+    /** Deallocates the object's memory. */
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    /** Draws the bal on the screen. */
+    method void draw() {
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x, y, x + radius, y + radius);
+        return;
+    }
+
+    /** Erases the ball from the screen. */
+    method void erase() {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x, y, x + radius, y + radius);
+        return;
+    }
+    
+    method void put(int a, int b){
+        let x = a;
+        let y = b;
+        return;
+    }
+
+    method void move(){
+      if ((x + radius) < 510) {
+            do erase();
+            let x = x + velX;
+            let y = y + velY;
+            do Screen.setColor(true);
+            do Screen.drawRectangle(x, y, x + radius, y + radius);
+        }
+        return;
+    }
+}
